@@ -7,6 +7,16 @@ import ctypes
 class localized:
   # Switch to default UI's language if possible
   _json_data = ""
+  _default = ""
+  #
+  # localize later (regex not recommended to store as json)
+  _acronyms = {
+      r"\bGRUNDST\b" : "Grundsteuer", "\bUSt[\.]{1,}" : "Umsatzsteuer", "\bMWSt[\.]{1,}" : "Mehrwertsteuer", 
+      r"\bFil[\.]{1,}" : "Filiale", "\behem[\.]{1,}" : "ehemalig",
+      r"\bNts\b" : "Notes", r"\bAuftr[\-\.]{0,}Nr[\.]{0,}" : "Auftragsnummer",
+      r"\bKd[\-\.]{0,}Nr[\.]{0,}" : "Kundennummer", r"\bRe[\-\.]{0,}Nr[\.]{0,}" : "Rechnungsnummer"
+  }
+  #
   _windll = ctypes.windll.kernel32
   current_lang = locale.windows_locale[ _windll.GetUserDefaultUILanguage() ]
   
@@ -49,6 +59,15 @@ class localized:
     if textkey in self._default:
       return _default[textkey]
     return textkey + " (no description available)"
+  
+  def replace_all(self, text, dic):
+    for i, j in dic.items():
+      text = re.sub(i,j + ' ',text)
+    return text
+  
+  def deacronymize(self, rawtext):
+    rawtext = self.replace_all(rawtext, self._acronyms)
+    return rawtext
 
 
 class textfilter:
