@@ -190,11 +190,16 @@ time.sleep(1)
 # print("\nGo!\n")
 # df.head(20)
 
+_debugTextExtractor = False
 #play
 for i, row in df.iterrows():
     print("\n# PAGE NO.", str(i), "#")
     print(row['page'])
-    engine.say(row['page']) # to read immediately
+    text_extract = locales.deacronymize("".join(row['page']))
+    if _debugTextExtractor:
+        print(text_extract)
+        continue
+    engine.say(text_extract) # to read immediately
     engine.runAndWait()
 print(ruler)
 print(locales.get("BookFinished"))
