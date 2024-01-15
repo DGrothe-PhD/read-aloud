@@ -3,6 +3,7 @@ import re
 import json
 import locale
 import ctypes
+from locales.localizedlists import helper
 
 class localized:
   # Switch to default UI's language if possible
@@ -10,12 +11,7 @@ class localized:
   _default = ""
   #
   # localize later (regex not recommended to store as json)
-  _acronyms = {
-      r"\bGRUNDST\b" : "Grundsteuer", "\bUSt[\.]{1,}" : "Umsatzsteuer", "\bMWSt[\.]{1,}" : "Mehrwertsteuer", 
-      r"\bFil[\.]{1,}" : "Filiale", "\behem[\.]{1,}" : "ehemalig",
-      r"\bNts\b" : "Notes", r"\bAuftr[\-\.]{0,}Nr[\.]{0,}" : "Auftragsnummer",
-      r"\bKd[\-\.]{0,}Nr[\.]{0,}" : "Kundennummer", r"\bRe[\-\.]{0,}Nr[\.]{0,}" : "Rechnungsnummer"
-  }
+  _acronyms = {}
   #
   _windll = ctypes.windll.kernel32
   current_lang = locale.windows_locale[ _windll.GetUserDefaultUILanguage() ]
@@ -26,13 +22,20 @@ class localized:
       "en_US" : "English (United States)",\
       "de_DE" : "German"\
     }
-    
+    h = helper()
     self.current_language_name = "English (United States)"
     try:
       self.current_language_name = self.langdic[self.current_lang]
     except:
       pass
-  
+    
+    if langcode == None:
+      self._acronyms = h.acronyms_dic["de_DE"]
+      try:
+        self._acronyms = h.acronyms_dic[self.current_lang]
+      except:
+        pass
+    #
     if langcode != None:
       self.__prepareJson(langcode)
     else:
@@ -81,7 +84,7 @@ class textfilter:
     rawtext = [re.sub(r"([0-9])([a-z])", r"\1 \2", str(x)) for x in rawtext]
     rawtext = [re.sub(r"(\))([A-Z])", r"\1 \2", str(x)) for x in rawtext]
     rawtext = [re.sub(r'– +', "–", str(x)) for x in rawtext]
-    # rawtext = [re.sub(r'\n', " ", str(x)) for x in rawtext]
+    rawtext = [re.sub("\r", "\r\n", str(x)) for x in rawtext]
     rawtext = [re.sub(r'\s+', " ", str(x)) for x in rawtext]
     ####
     # remove control bytes except from \0\t\r\n
